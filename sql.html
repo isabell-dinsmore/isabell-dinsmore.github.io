@@ -12,20 +12,79 @@
 	  <li><a class="active" href="sql.html">SQL</a></li>
 	</ul>
 	<div id="wrapper">
-		<p class="description">This is a snippet of SQL code that would make a table based off of username and password data entered on the HTML page.</p>
+		<p class="description">This is SQL code that would make a database that contains customers, products, shops, sales, and vendors. These tables contain primary keys that connect them as well.</p>
 		<div class="code">
 			<pre>
 				<code>
-< ?$user="username";
-$password="password";
-$database="database";
-mysql_connect(localhost,$user,$password);
-@mysql_select_db($database) or die( "Unable to select database");
-$query="CREATE TABLE contacts (id int(6) NOT NULL auto_increment,first varchar(15) NOT NULL,last varchar(15) NOT NULL,
-phone varchar(20) NOT NULL,mobile varchar(20) NOT NULL,fax varchar(20) NOT NULL,email varchar(30) NOT NULL,
-web varchar(30) NOT NULL,PRIMARY KEY (id),UNIQUE id (id),KEY id_2 (id))";mysql_query($query);
-mysql_close();
-?>
+					-- ****************** SqlDBM: MySQL ******************;
+					-- ***************************************************;
+
+					-- ************************************** `customers`
+
+					CREATE TABLE `customers`
+					(
+					 `phoneNum`    int NOT NULL ,
+					 `customerNum` int NOT NULL ,
+					 `name`        varchar(45) NOT NULL ,
+					 `address`     varchar(45) NOT NULL ,
+					PRIMARY KEY (`phoneNum`)
+					);
+
+					-- ************************************** `products`
+
+					CREATE TABLE `products`
+					(
+					 `price`        float NOT NULL ,
+					 `type`         varchar(45) NOT NULL ,
+					 `manufacturer` varchar(45) NOT NULL ,
+					 `address`      varchar(45) NOT NULL ,
+					PRIMARY KEY (`price`),
+					KEY `fkIdx_38` (`address`),
+					CONSTRAINT `FK_38` FOREIGN KEY `fkIdx_38` (`address`) REFERENCES `shops` (`address`)
+					);
+
+					-- ************************************** `shops`
+
+					CREATE TABLE `shops`
+					(
+					 `address` varchar(45) NOT NULL ,
+					 `name`    varchar(45) NOT NULL ,
+					 `price`   float NOT NULL ,
+					PRIMARY KEY (`address`),
+					KEY `fkIdx_41` (`price`),
+					CONSTRAINT `FK_41` FOREIGN KEY `fkIdx_41` (`price`) REFERENCES `products` (`price`)
+					);
+
+					-- ************************************** `sales`
+
+					CREATE TABLE `sales`
+					(
+					 `products` varchar(45) NOT NULL ,
+					 `price`    float NOT NULL ,
+					 `address`  varchar(45) NOT NULL ,
+					 `staffNum` int NOT NULL ,
+					 `phoneNum` int NOT NULL ,
+					 `date`     date NOT NULL ,
+					 `sumTotal` float NOT NULL ,
+					PRIMARY KEY (`products`),
+					KEY `fkIdx_22` (`price`),
+					CONSTRAINT `FK_22` FOREIGN KEY `fkIdx_22` (`price`) REFERENCES `products` (`price`),
+					KEY `fkIdx_25` (`address`),
+					CONSTRAINT `FK_25` FOREIGN KEY `fkIdx_25` (`address`) REFERENCES `shops` (`address`),
+					KEY `fkIdx_28` (`staffNum`),
+					CONSTRAINT `FK_28` FOREIGN KEY `fkIdx_28` (`staffNum`) REFERENCES `vendors` (`staffNum`),
+					KEY `fkIdx_31` (`phoneNum`),
+					CONSTRAINT `FK_31` FOREIGN KEY `fkIdx_31` (`phoneNum`) REFERENCES `customers` (`phoneNum`)
+					);
+
+					-- ************************************** `vendors`
+
+					CREATE TABLE `vendors`
+					(
+					 `staffNum` int NOT NULL ,
+					 `name`     varchar(45) NOT NULL ,
+					PRIMARY KEY (`staffNum`)
+					);
 				</code>
 			</pre>
 		</div>
