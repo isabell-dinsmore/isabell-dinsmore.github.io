@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+	<ul>
+	  <li><a href="index.html">Home</a></li>
+	  <li><a href="c++.html">C++</a></li>
+	  <li><a class="active" href="js.html">JS</a></li>
+	  <li><a href="php.html">PHP</a></li>
+	  <li><a href="sql.html">SQL</a></li>
+	</ul>
+	<div id="wrapper">
+		<p class="description">The purpose of this project was to make a few input fields that once submitted would put the text in a box to the right in the format of a ticket list. The code for that is shown below. Click <a href="booktrip.htm" target="_blank">here</a> if you would like to open the web page example on a new page.</p>
+		<p class="description" style="margin-top:3%;"><u>JS File</u></p>
+		<div class="code">
+			<pre>
+				<code>
+"use strict"; // interpret contents in JavaScript strict mode
+var dateObject = new Date();
+var countdown;
+var ticket = {
+   passengersOnTicket: 0,
+   passengers: {},
+   calcCost: updateTotalCost
+};
+
+function displayCalendar(whichMonth) {
+   var date;
+   var dateToday = new Date();
+   var dayOfWeek;
+   var daysInMonth;
+   var dateCells;
+   var captionValue;
+   var month;
+   var year;
+   var monthArray = ["January","February","March","April","May",
+      "June","July","August","September","October","November",
+      "December"];
+   if (whichMonth === -1) {
+      dateObject.setMonth(dateObject.getMonth() - 1);
+   } else if (whichMonth === 1) {
+      dateObject.setMonth(dateObject.getMonth() + 1);
+   }
+   month = dateObject.getMonth();
+   year = dateObject.getFullYear();
+   dateObject.setDate(1);
+   dayOfWeek = dateObject.getDay();
+   captionValue = monthArray[month] + " " + year;
+   document.querySelector("#cal table caption").innerHTML = captionValue;
+   if(month===0||month===2||month===4||
+      month === 6 || month === 7 || month === 9 ||
+      month === 11) { // Jan, Mar, May, Jul, Aug, Oct, Dec
+      daysInMonth = 31;
+   } else if (month === 1) { // Feb
+      if (year % 4 === 0) { // leap year test
+         if (year % 100 === 0) {
+            // year ending in 00 not a leap year unless
+            // divisible by 400
+            if (year % 400 === 0) {
+               daysInMonth = 29;
+            } else {
+               daysInMonth = 28;
+            }
+         } else {
+           daysInMonth = 29;
+         }
+      } else {
+         daysInMonth = 28;
+      }
+   } else { // Apr, Jun, Sep, Nov
+      daysInMonth = 30;
+   }
+   dateCells = document.getElementsByTagName("td");
+   for (var i = 0; i < dateCells.length; i++) {
+      // clear existing table dates
+      dateCells[i].innerHTML = "";
+      dateCells[i].className = "";
+   }
+   for (var i = dayOfWeek; i < daysInMonth + dayOfWeek; i++) {
+      // add dates to days cells
+      dateCells[i].innerHTML = dateObject.getDate();
+      dateCells[i].className = "date";
+      if (dateToday < dateObject) {
+         dateCells[i].className = "futuredate";
+      }
+      date = dateObject.getDate() + 1;
+      dateObject.setDate(date);
+   }
+   dateObject.setMonth(dateObject.getMonth() - 1);
+   // reset month to month shown
+   document.getElementById("cal").style.display = "block";
+   // display calendar if it's not already visible
+}
+
+function selectDate(event) {
+   if (event === undefined) { // get caller element in IE8
+      event = window.event;
+   }
+   var callerElement = event.target || event.srcElement;
+   if (callerElement.innerHTML === "") {
+      // cell contains no date, so don’t close the calendar
+      document.getElementById("cal").style.display = "block";
+      return false;
+   }
+   dateObject.setDate(callerElement.innerHTML);
+   var fullDateToday = new Date();
+   var dateToday = Date.UTC(fullDateToday.getFullYear(),
+      fullDateToday.getMonth(), fullDateToday.getDate());
+   var selectedDate = Date.UTC(dateObject.getFullYear(),
+          dateObject.getMonth(), dateObject.getDate());
+   if (selectedDate <= dateToday) {
+      document.getElementById("cal").style.display = "block";
+      return false;
+   }
+   document.getElementById("tripDate").value = dateObject.toLocaleDateString();
+   hideCalendar();
+   countdown = setInterval(updateCountdown, 1000);
+   document.getElementById("countdownSection").style.display = "block";
+   document.getElementById("ticket").style.display = "block";
+   ticket.date = dateObject.toLocaleDateString();
+   document.getElementById("selectedDate").innerHTML = ticket.date;
+   document.getElementById("dateSection").style.display = "block";
+}
+function hideCalendar() {
+     document.getElementById("cal").style.display = "none";
+}
+function prevMo() {
+   displayCalendar(-1);
+}
+function nextMo() {
+   displayCalendar(1);
+}
+
+function updateTotalCost() {
+   var totalCost = this.passengersOnTicket * 250000;
+   var monthlyCost = totalCost / 60;
+   var shortMonthlyCost = monthlyCost.toFixed(0);
+   document.getElementById("singleLabel").innerHTML =
+      "Single payment of $" + totalCost.toLocaleString();
+   document.getElementById("multipleLabel").innerHTML =
+      "60 monthly payments of $" + shortMonthlyCost.toLocaleString();
+}
+
+function updateCountdown() {
+   var dateToday = new Date();
+   var dateFrom = Date.UTC(dateToday.getFullYear(),
+      dateToday.getMonth(), dateToday.getDate(),
+      dateToday.getHours(), dateToday.getMinutes(),
+      dateToday.getSeconds());
+   var dateTo = Date.UTC(dateObject.getFullYear(),
+      dateObject.getMonth(), dateObject.getDate(),
+      19, 0, 0); // all launches at 8:00pm UTC
+   if ((dateTo - dateFrom) < 1000) { // time will be less than 0 when setInterval runs next
+      clearInterval(countdown);
+      document.getElementById("countdownSection").style.display = "none";
+   }
+   // days
+   var daysUntil = Math.floor((dateTo - dateFrom) / 86400000);
+   document.getElementById("countdown").innerHTML = daysUntil;
+   //  hours
+   var fractionalDay = (dateTo - dateFrom) % 86400000;
+   var hoursUntil = Math.floor(fractionalDay / 3600000);
+   if (hoursUntil < 10) {
+      hoursUntil = "0" + hoursUntil;
+   }
+   document.getElementById("countdown").innerHTML += ":" + hoursUntil;
+   // minutes
+   var fractionalHour = fractionalDay % 3600000;
+   var minutesUntil = Math.floor(fractionalHour / 60000);
+   if (minutesUntil < 10) {
+      minutesUntil = "0" + minutesUntil;
+   }
+   document.getElementById("countdown").innerHTML +=
+      ":" + minutesUntil;
+   // seconds
+   var fractionalMinute = fractionalHour % 60000;
+   var secondsUntil = Math.floor(fractionalMinute / 1000);
+   if (secondsUntil < 10) {
+      secondsUntil = "0" + secondsUntil;
+   }
+   document.getElementById("countdown").innerHTML +=
+      ":" + secondsUntil;
+   }
+function registerName() {
+   var passengerList = document.getElementById("passengers");
+   var passengerName = document.createElement("li");
+   var newFnameProp;
+   var newLnameProp;
+   var newAgeProp;
+   var newPnumberProp;
+   ticket.passengersOnTicket += 1;
+   newFnameProp = "fname" + ticket.passengersOnTicket;
+   newLnameProp = "lname" + ticket.passengersOnTicket;
+   newAgeProp = "age" + ticket.passengersOnTicket;
+   newPnumberProp = "pnumber" + ticket.passengersOnTicket;
+   ticket.passengers[newFnameProp] = document.getElementById("fname").value;
+   ticket.passengers[newLnameProp] = document.getElementById("lname").value;
+   ticket.passengers[newAgeProp] = document.getElementById("age").value;
+   ticket.passengers[newPnumberProp] = document.getElementById("pnumber").value;
+   // add entered name to passenger list in ticket section
+   passengerName.innerHTML = "Name: " + ticket.passengers[newFnameProp] + " " + ticket.passengers[newLnameProp] + "<br>  Age: " + ticket.passengers[newAgeProp] + "<br /> Phone #: " + ticket.passengers[newPnumberProp] + "<br /> <br />";
+   passengerList.appendChild(passengerName);
+   // clear first and last names from form
+   document.getElementById("fname").value = "";
+   document.getElementById("lname").value = "";
+   document.getElementById("age").value = "";
+   document.getElementById("pnumber").value = "";
+   // display ticket and passengers section
+   document.getElementById("ticket").style.display = "block";
+   document.getElementById("passengersSection").style.display = "block";
+   // return focus to First Name field to facilitate entry of
+   //another passenger name
+   document.getElementById("fname").focus();
+   ticket.calcCost();
+}
+
+function createEventListeners() {
+   var dateField = document.getElementById("tripDate");
+      if (dateField.addEventListener) {
+   dateField.addEventListener("click", displayCalendar, false);
+   } else if (dateField.attachEvent) {
+      dateField.attachEvent("onclick", displayCalendar);
+   }
+   var dateCells = document.getElementsByTagName("td");
+   if (dateCells[0].addEventListener) {
+      for (var i = 0; i < dateCells.length; i++) {
+         dateCells[i].addEventListener("click", selectDate, false);
+      }
+   } else if (dateCells[0].attachEvent) {
+      for (var i = 0; i < dateCells.length; i++) {
+         dateCells[i].attachEvent("onclick", selectDate);
+      }
+   }
+   var closeButton = document.getElementById("close");
+   if (closeButton.addEventListener) {
+      closeButton.addEventListener("click", hideCalendar, false);
+   } else if (closeButton.attachEvent) {
+      closeButton.attachEvent("onclick", hideCalendar);
+   }
+   var prevLink = document.getElementById("prev");
+   var nextLink = document.getElementById("next");
+   if (prevLink.addEventListener) {
+      prevLink.addEventListener("click", prevMo, false);
+      nextLink.addEventListener("click", nextMo, false);
+   } else if (prevLink.attachEvent) {
+      prevLink.attachEvent("onclick", prevMo);
+      nextLink.attachEvent("onclick", nextMo);
+   }
+   var nameButton = document.getElementById("addName");
+   if (nameButton.addEventListener) {
+      nameButton.addEventListener("click", registerName, false);
+   } else if (nameButton.attachEvent) {
+      nameButton.attachEvent("onclick", registerName);
+   }
+}
+
+if (window.addEventListener) {
+   window.addEventListener("load", createEventListeners, false);
+} else if (window.attachEvent) {
+   window.attachEvent("onload", createEventListeners);
+}
+				</code>
+			</pre>
+		</div>
+		<p class="description" style="margin-top:3%;"><u>HTML File</u></p>
+		<div class="code">
+			<pre>
+				<code>
+< !DOCTYPE html>
+< html lang="en">
+< head>
+   < meta charset="utf-8" />
+   < meta name="viewport" content="width=device-width,initial-scale=1.0">
+   < title>Outer Orbits - Reserve Your Seat</ title>
+   < link rel="stylesheet" media="screen and (max-device-width: 999px)" href="orbitshh.css" />
+   < link rel="stylesheet" media="screen and (min-device-width: 1000px)" href="orbits.css" />
+   <!--[if lt IE 9]>
+      <link rel="stylesheet" href="orbits.css" />
+   <![endif]-->
+   < link href='http://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+   < link href='http://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
+   < script src="modernizr.custom.65897.js">< /script>
+< /head>
+
+< body>
+   < header>
+      < h1>
+         < img src="images/orbits.png" width="98" height="116" alt="Outer Orbits" title="" />
+         Outer Orbits
+      < /h1>
+      < p>space excursions < span>&#10022;< /span>< /p>
+   < /header>
+
+   < nav>
+      < ul>
+         < li>< a href="#">About Us< /a>< /li>
+         < li>< a href="#">Trips< /a>< /li>
+         < li>< a href="#">FAQ< /a>< /li>
+         < li class="currentPage">< a href="#">Reservations< /a>< /li>
+         < li>< a href="#">Simulator< /a>< /li>
+         < li>< a href="#">Contact< /a>< /li>
+      < /ul>
+   < /nav>
+
+   < article>
+      < h2>Book Your Ticket< /h2>
+      < section id="ticket">
+         < h3>Ticket Details< /h3>
+         < div id="passengersSection">
+            < h4>Passengers< /h4>
+            < ul id="passengers">< /ul>
+         < /div>
+         < div id="dateSection">
+            < h4>Date< /h4>
+            < p id="selectedDate">< /p>
+         < /div>
+         < div id="countdownSection">
+            < h4>Countdown to launch< /h4>
+            < p id="countdown">< /p>
+         < /div>
+      < /section>
+      < form>
+         < fieldset class="text">
+            < legend>Add Passengers< /legend>
+            < label for="fname">First Name< /label>
+            < input type="text" id="fname" />
+            < label for="lname">Last Name< /label>
+            < input type="text" id="lname" />
+			< label for="age">Age< /label>
+            < input type="text" id="age" />
+			< label for="age">Phone #< /label>
+            < input type="text" id="pnumber" />
+            < input type="button" value="Add" id="addName" />
+         < /fieldset>
+         < fieldset>
+            < legend>Pick a date< /legend>
+            < input type="text" id="tripDate" />
+         < /fieldset>
+         < fieldset class="checks">
+            < legend>Choose a payment method< /legend>
+            < input type="radio" id="single" name="Payment" />
+            < label for="single" id="singleLabel">Single payment< /label>
+            < input type="radio" id="multiple" name="Payment" />
+            < label for="multiple" id="multipleLabel">60 monthly payments< /label>
+         < /fieldset>
+      < /form>
+      < div id="cal">
+         < div id="prev">&lt; previous< /div>
+         < div id="next">next &gt;< /div>
+         < table>
+            < caption>< /caption>
+            < tr>
+               < th>Sun< /th>
+               < th>Mon< /th>
+               < th>Tue< /th>
+               < th>Wed< /th>
+               < th>Thu< /th>
+               < th>Fri< /th>
+               < th>Sat< /th>
+            < /tr>
+            < tr>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+            < /tr>
+            < tr>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+            < /tr>
+            < tr>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+            < /tr>
+            < tr>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+            < /tr>
+            < tr>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+            < /tr>
+            < tr>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+               < td>< /td>
+            < /tr>
+         < /table>
+         < p id="close">close < span>&#9746;< /span>< /p>
+      < /div>
+   < /article>
+   < footer>< p>Outer Orbits Space Excursions < span>&#10022;< /span> Virginia Beach, VA< /p>< /footer>
+   < script src="orbits.js"></ script>
+< /body>
+< /html>
+				</code>
+			</pre>
+		</div>
+		<p class="description" style="margin-top:3%;"><u>CSS File</u></p>
+		<div class="code">
+			<pre>
+				<code>
+/* apply a natural box layout model to all elements */
+* {
+   -moz-box-sizing: border-box;
+   -webkit-box-sizing: border-box;
+   box-sizing: border-box;
+}
+
+/* reset rules */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+   margin: 0;
+   padding: 0;
+   border: 0;
+   font-size: 100%;
+   font: inherit;
+   vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+   display: block;
+}
+
+body {
+   line-height: 1;
+   width: 800px;
+   margin: 0 auto;
+   font-family: roboto, arial, helvetica, sans-serif;
+   background: black;
+   background: url(images/tile.jpg) repeat;
+   background: url(images/bg.jpg) left top no-repeat, url(images/tile.jpg) repeat;
+}
+
+ol, ul {
+   list-style: none;
+}
+
+table {
+   border-collapse: collapse;
+   border-spacing: 0;
+}
+
+a:link, a:visited {
+   text-decoration: none;
+   color: inherit;
+}
+
+a:hover {
+   text-decoration: none;
+   color: inherit;
+}
+
+a:active {
+   text-decoration: none;
+   color: inherit;
+}
+
+/* page header */
+header {
+   margin-top: 20px;
+   width: 100%;
+   background: rgb(46,49,146);
+   color: white;
+   padding: 0 20px 10px 0;
+   height: 136px;
+   position: relative;
+   -moz-border-radius-topleft: 10px;
+   -webkit-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
+   -moz-border-radius-topright: 10px;
+   -webkit-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+header h1 {
+   font-family: roboto, arial, helvetica, sans-serif;
+   font-size: 71pt;
+   text-transform: uppercase;
+   text-align: right;
+   font-weight: bold;
+   color: white;
+   background: rgb(46,49,146);
+   -moz-border-radius-topleft: 10px;
+   -webkit-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
+   -moz-border-radius-topright: 10px;
+   -webkit-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+header h1 img {
+   display: block;
+   float: left;
+   margin: 10px;
+}
+
+header p {
+   text-align: right;
+   font-family: "Racing Sans One", garamond, "times new roman", times, serif;
+   font-size: 24pt;
+   position: relative;
+   top: -10px;
+}
+
+header p span {
+   color: #ffcb40;
+   font-size: 24pt;
+}
+
+/* navigation */
+nav {
+   margin-top: 10px;
+   color: white;
+   font-size: 16pt;
+}
+
+nav ul {
+   text-align: center;
+}
+
+nav ul li {
+   padding: 2px 10px;
+   display: inline-block;
+   margin: 0 10px;
+   background: black;
+}
+
+nav ul li:hover, nav ul li.currentPage {
+   background: rgb(216,217,219);
+   color: black;
+}
+
+/* main content */
+article {
+   padding: 20px 20px 40px;
+   background: rgb(216,217,219);
+   margin-top: 10px;
+   position: relative;
+}
+
+article h2 {
+   font-size: 36pt;
+   font-family: "Racing Sans One", garamond, "times new roman", times, serif;
+   color: rgb(46,49,146);
+}
+
+article h3 {
+   font-size: 24pt;
+   font-family: "Racing Sans One", garamond, "times new roman", times, serif;
+   color: rgb(46,49,146);
+}
+
+article h4 {
+   font-size: 14pt;
+   font-family: roboto, arial, helvetica, sans-serif;
+   color: rgb(46,49,146);
+   margin-top: 10px;
+}
+
+/* ticket section */
+#ticket {
+   float: right;
+   width: 380px;
+   border: 1px solid black;
+   background: white;
+   padding: 20px;
+   -moz-border-radius-topleft: 10px;
+   -webkit-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
+   -moz-border-radius-topright: 10px;
+   -webkit-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+#ticket, #dateSection, #passengersSection, #countdownSection {
+   display: none;
+}
+
+#ticket li, #ticket p {
+   text-indent: 1em;
+   margin-top: 5px;
+}
+
+#countdown {
+   font-weight: bold;
+}
+
+/* form */
+form {
+   width: 380px;
+}
+
+fieldset {
+   position: relative;
+   padding: 5px 30px 30px;
+   margin: 0 15px 25px;
+}
+
+legend {
+   font-weight: bold;
+   font-size: 24px;
+   position: absolute;
+   padding: 10px 0;
+}
+
+input, label {
+   position: relative;
+   top: 50px;
+   line-height: 1.2em;
+   display: block;
+}
+
+fieldset.checks input {
+   float: left;
+   clear: left;
+   margin-right: 5px;
+}
+
+fieldset.checks label {
+   line-height: 1.2em;
+   margin-bottom: 4px;
+}
+
+fieldset.text label {
+   width: 6em;
+   text-align: right;
+   float: left;
+   clear: left;
+   margin-right: 10px;
+   margin-top: 5px;
+}
+
+fieldset.text input {
+   margin-top: 5px;
+   margin-right: 5px;
+}
+
+#addName {
+   margin-left: 9.5em;
+}
+
+/* calendar */
+#cal {
+   display: none;
+   position: absolute;
+   left: 230px;
+   top: 65px;
+   background: black;
+   color: white;
+   padding: 10px;
+   -moz-border-radius-topleft: 10px;
+   -webkit-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
+   -moz-border-radius-topright: 10px;
+   -webkit-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+#cal table {
+   clear: both;
+}
+
+#cal table caption {
+   font-weight: bold;
+   font-size: 14pt;
+   margin-top: 10px;
+   margin-bottom: 10px;
+   background: rgb(46,49,146);
+}
+
+#cal table th {
+   text-align: right;
+}
+
+#cal table th, #cal table td {
+   width: 2em;
+   padding: 4px;
+}
+
+#cal table td {
+   color: rgb(178,184,183);
+   text-align: right;
+   cursor: pointer;
+}
+
+#prev {
+   float: left;
+   padding: 4px;
+   cursor: pointer;
+}
+
+#next {
+   float: right;
+   padding: 4px;
+   cursor: pointer;
+}
+
+#cal table td.futuredate {
+   color: white;
+}
+
+#cal table td.futuredate:hover, #prev:hover, #next:hover, #close:hover {
+   background: yellow;
+   color: black;
+}
+
+#close {
+   color: white;
+   float: right;
+   padding: 0 4px;
+   cursor: pointer;
+}
+
+#close span {
+   font-size: 20pt;
+}
+
+/* footer */
+footer {
+   text-align: right;
+   padding-right: 10px;
+}
+
+footer p {
+   display: inline-block;
+   margin-top: 10px;
+   background: black;
+   color: white;
+   font-size: 16px;
+}
+
+footer p span {
+   color: #ffcb40;
+}
+				</code>
+			</pre>
+		</div>
+	</div>
+</body>
+</html>
